@@ -6,7 +6,7 @@ module.exports = {
 
 		var passport = require('passport'),
 		LocalStrategy = require('passport-local').Strategy,
-		//FacebookStrategy = require('passport-facebook').Strategy,
+		FacebookStrategy = require('passport-facebook').Strategy,
 		bcrypt = require('bcrypt');
 
 		passport.serializeUser(function (user, done) {
@@ -49,15 +49,23 @@ module.exports = {
 			});
 		}));
 
-		// passport.use(new FacebookStrategy({
-		// 	clientID: sails.config.social.facebookClientID,
-		// 	clientSecret: sails.config.social.facebookClientSecret,
-		// 	callbackURL: sails.config.app.host + '/auth/facebook/callback'
-		// }, function (accessToken, refreshToken, profile, done) {
+		passport.use(new FacebookStrategy({
+			clientID: sails.config.social.facebookClientID,
+			clientSecret: sails.config.social.facebookClientSecret,
+			callbackURL: 'http://' + sails.config.app.host + '/auth/facebook/callback'
+		}, function (accessToken, refreshToken, profile, done) {
 
-		// 	User.findOrCreate({facebookId: profile.id}, profile)
-		// 	.exec(function)
-		// }));
+			console.log('Creating record, profile is \n', profile);
+			User.findOrCreate({facebookId: profile.id}, {
+				facebookId: profile.id,
+				email: profile.emails ? profile.emails[0] : null,
+				displayName: profile.displayName
+			})
+			.exec(function (err, user) {
+				if (err) { return done(err); }
+				return done(null, user);
+			});
+		}));
 
 	}
 };

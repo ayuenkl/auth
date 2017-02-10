@@ -11,16 +11,16 @@ module.exports = {
 
   attributes: {
 
-  	email: {
+  	FacebookId: {
+      type: 'string'
+    },
+
+    email: {
   		type: 'email',
-  		required: true,
-  		unique: true
   	},
 
   	password: {
   		type: 'string',
-  		minLength: 6,
-  		required: true
   	},
 
   	toJSON: function () {
@@ -32,19 +32,24 @@ module.exports = {
 
   beforeCreate: function (user, cb) {
 
-  	bcrypt.genSalt(10, function (err, salt) {
+  	if (user.password) {
 
-  		bcrypt.hash(user.password, salt, function (err, hash) {
+      bcrypt.genSalt(10, function (err, salt) {
 
-  			if (err) {
-  				console.log(err);
-  				return cb(err);
-  			} else {
-  				user.password = hash;
-  				return cb();
-  			}
-  		});
-  	});
+    		bcrypt.hash(user.password, salt, function (err, hash) {
+
+    			if (err) {
+    				console.log(err);
+    				return cb(err);
+    			} else {
+    				user.password = hash;
+    				return cb();
+    			}
+    		});
+    	});
+    } else {
+      return cb();
+    }
   }
 };
 

@@ -16,32 +16,40 @@ module.exports = {
 	},
 
 	login: function (req, res) {
-
-		passport.authenticate('local', function (err, user, info) {
-
-			if ((err) || (!user)) {
-				return res.send({
-					message: info.message,
-					user: user
-				});
-			}
-
-			req.logIn(user, function (err) {
-
-				if (err) res.send(err);
-
-				return res.send({
-					message: info.message,
-					user: user
-				});
-			});
-
-		})(req, res);
+		passportCallback('local', req, res);
 	},
 
 	logout: function (req, res) {
 		req.logout();
 		res.redirect('/');
-	}	
+	},
+
+	facebookLogin: function (req, res) {
+		passport.authenticate('facebook', { scope: ['user_about_me', 'email']})(req, res);
+	},
+
+	facebookCallback: function (req, res) {
+		passportCallback('facebook', req, res);
+	}
 };
 
+function passportCallback(provider, req, res) {
+
+	passport.authenticate(provider, function (err, user, info) {
+
+		if ((err) || (!user)) {
+			return res.negotiate(err);
+		}
+
+		req.logIn(user, function (err) {
+
+			if (err) res.send(err);
+
+			return res.send({
+				message: info.message,
+				user: user
+			});
+		});
+
+	})(req, res);
+}
